@@ -62,7 +62,7 @@
       libnotify
       brightnessctl
       devenv
-      redact
+      t3code
     ];
   };
 }
