@@ -3,7 +3,7 @@
   inputs,
   ...
 }: {
-  flake.nixosModules.flowz13Hardware = {
+  flake.nixosModules."flow-z13Hardware" = {
     config,
     pkgs,
     lib,

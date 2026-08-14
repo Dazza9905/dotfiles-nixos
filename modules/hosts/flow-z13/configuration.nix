@@ -3,15 +3,14 @@
   inputs,
   ...
 }: {
-  flake.nixosModules.flowz13Configuration = {
+  flake.nixosModules."flow-z13Configuration" = {
     pkgs,
     lib,
     ...
   }: {
     imports = [
-      self.nixosModules.flowz13Hardware
-      self.nixosModules.nix-settings
-      self.nixosModules.time-lang
+      self.nixosModules."flow-z13Hardware"
+      self.nixosModules.base
       self.nixosModules.devices
       self.nixosModules.desktop
       self.nixosModules.printing

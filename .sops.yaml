@@ -1,0 +1,13 @@
+keys:
+  # master key: private half lives in ~/.config/sops/age/keys.txt on dazzapc
+  # — BACK IT UP to your password manager, it decrypts everything.
+  - &master age1zxx3xc2e7tj3g26u45wqfsle9hyu20p33xyqu3ta4jzxe99gngyqqe0vw3
+  # TODO after first NixOS boot on the pi:
+  #   ssh-keyscan 192.168.100.21 | nix run nixpkgs#ssh-to-age
+  # then add the result here as `&rpi5 age1...`, append it to the key group
+  # below, and run: sops updatekeys secrets/rpi5.yaml
+creation_rules:
+  - path_regex: secrets/rpi5\.yaml$
+    key_groups:
+      - age:
+          - *master

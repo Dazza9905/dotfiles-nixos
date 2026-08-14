@@ -10,12 +10,12 @@
   }: {
     imports = [
       self.nixosModules.dazzapcHardware
-      self.nixosModules.nix-settings
-      self.nixosModules.time-lang
+      self.nixosModules.base
       self.nixosModules.devices
       self.nixosModules.desktop
 
-      self.nixosModules.ssh
+      # self.nixosModules.games
+      self.nixosModules.gamedev
       self.nixosModules.networking
       self.nixosModules.starcitizen
       self.nixosModules."programs-3d"
@@ -31,6 +31,9 @@
     boot.loader.grub.useOSProber = true;
     boot.kernelPackages = pkgs.linuxPackages_latest;
     boot.supportedFilesystems = ["nfs" "ntfs"];
+
+    # build aarch64 (rpi5) closures via qemu emulation
+    boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
     # graphics
     boot.kernelParams = ["nvidia_drm.fbdev=1"];
