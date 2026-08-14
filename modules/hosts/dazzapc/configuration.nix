@@ -14,7 +14,7 @@
       self.nixosModules.devices
       self.nixosModules.desktop
 
-      self.nixosModules.games
+      # self.nixosModules.games
       self.nixosModules.gamedev
       self.nixosModules.networking
       self.nixosModules.starcitizen
