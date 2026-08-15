@@ -20,12 +20,5 @@
     # initdb onto the SD card) when the data disk is missing.
     systemd.services.postgresql.unitConfig.RequiresMountsFor = ["/mnt/nas-data"];
     systemd.services.immich-server.unitConfig.RequiresMountsFor = ["/mnt/nas-data"];
-
-    services.immich-public-proxy = {
-      enable = true;
-      immichUrl = "http://localhost:2283";
-      port = 3000; # TODO: match whatever port the docker proxy published
-      openFirewall = true;
-    };
   };
 }

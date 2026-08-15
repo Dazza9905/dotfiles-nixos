@@ -67,6 +67,9 @@
     networking.networkmanager.enable = true;
     security.polkit.enable = true;
 
+    networking.firewall.allowedTCPPorts = [ 3773 ];
+
+
     users.users.dazza = {
       uid = 1000;
       isNormalUser = true;

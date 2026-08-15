@@ -8,6 +8,8 @@
       self.nixosModules.nas
       self.nixosModules.docker
       self.nixosModules.immich
+      self.nixosModules.immich-public-proxy
+      self.nixosModules.newt
       self.nixosModules.backup
     ];
 
