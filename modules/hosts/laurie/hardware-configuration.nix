@@ -4,35 +4,35 @@
     modulesPath,
     ...
   }: {
-  imports =
-    [ (modulesPath + "/profiles/qemu-guest.nix")
+    imports = [
+      (modulesPath + "/profiles/qemu-guest.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "virtio_pci" "sr_mod" "virtio_blk" ];
-  boot.initrd.kernelModules = [ "dm-snapshot" ];
-  boot.kernelModules = [ ];
-  boot.extraModulePackages = [ ];
+    boot.initrd.availableKernelModules = ["ata_piix" "uhci_hcd" "virtio_pci" "sr_mod" "virtio_blk"];
+    boot.initrd.kernelModules = ["dm-snapshot"];
+    boot.kernelModules = [];
+    boot.extraModulePackages = [];
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/4eb8fd24-f04a-481c-8874-e177af1bb0d6";
+    fileSystems."/" = {
+      device = "/dev/disk/by-uuid/4eb8fd24-f04a-481c-8874-e177af1bb0d6";
       fsType = "ext4";
     };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/5CA6-66ED";
+    fileSystems."/boot" = {
+      device = "/dev/disk/by-uuid/5CA6-66ED";
       fsType = "vfat";
-      options = [ "fmask=0022" "dmask=0022" ];
+      options = ["fmask=0022" "dmask=0022"];
     };
 
-  swapDevices = [ ];
+    swapDevices = [];
 
-  # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
-  # (the default) this is the recommended approach. When using systemd-networkd it's
-  # still possible to use this option, but it's recommended to use it in conjunction
-  # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
-  networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.ens3.useDHCP = lib.mkDefault true;
+    # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
+    # (the default) this is the recommended approach. When using systemd-networkd it's
+    # still possible to use this option, but it's recommended to use it in conjunction
+    # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
+    networking.useDHCP = lib.mkDefault true;
+    # networking.interfaces.ens3.useDHCP = lib.mkDefault true;
 
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+    nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   };
 }

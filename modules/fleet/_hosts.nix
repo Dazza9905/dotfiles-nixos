@@ -24,7 +24,7 @@
     tags = ["server" "arm"];
     allowLocalDeployment = false;
   };
- laurie = {
+  laurie = {
     system = "x86_64-linux"; # qemu-guest VPS, not arm
     targetHost = "37.120.189.13";
     targetUser = "root";

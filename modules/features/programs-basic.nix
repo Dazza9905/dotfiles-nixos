@@ -64,6 +64,7 @@
       devenv
       t3code
       bitwarden-desktop
+      cliamp
     ];
   };
 }
