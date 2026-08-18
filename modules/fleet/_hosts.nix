@@ -17,9 +17,9 @@
   #   tags = ["laptop" "x86"];
   #   allowLocalDeployment = true;
   # };
-  rpi5 = {
+  david = {
     system = "aarch64-linux";
-    targetHost = "192.168.100.21"; # confirm on the pi with `hostname -I`
+    targetHost = "192.168.100.21";
     targetUser = "root";
     tags = ["server" "arm"];
     allowLocalDeployment = false;

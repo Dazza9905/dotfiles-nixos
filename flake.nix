@@ -8,7 +8,7 @@
     import-tree = {
       url = "github:vic/import-tree";
     };
-
+    #bilt on top of wrappers
     wrapper-modules = {
       url = "github:BirdeeHub/nix-wrapper-modules";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -52,6 +52,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-citizen.inputs.nix-gaming.follows = "nix-gaming";
+
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs = inputs:

@@ -64,6 +64,12 @@
       options = ["x-systemd.automount" "noauto"];
     };
 
+    fileSystems."/mnt/nas-raw" = {
+      device = "192.168.100.21:/mnt/";
+      fsType = "nfs";
+      options = ["x-systemd.automount" "noauto"];
+    };
+
     networking.networkmanager.enable = true;
     security.polkit.enable = true;
 
