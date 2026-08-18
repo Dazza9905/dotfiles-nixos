@@ -1,32 +1,17 @@
 {
   self,
-  lib,
-  pkgs,
+  inputs,
   ...
 }: {
   flake.nixosModules.davidConfiguration = {
     lib,
+    pkgs,
     ...
   }: {
     imports = [
+      inputs.nixos-hardware.nixosModules.raspberry-pi-5
       self.nixosModules.davidHardware
     ];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # ------------------------------------------------------------------
     # RPI5 STUFF
@@ -49,7 +34,6 @@
     users.users.root.openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINt6vCBvTYA+fRDNxAHc9TmYDP/eAaUlCBBsK5AUM5Ym"
     ];
-    # ++ (args.extraPublicKeys or [ ]); # used for unit-testing this module
 
     system.stateVersion = "26.05";
   };
