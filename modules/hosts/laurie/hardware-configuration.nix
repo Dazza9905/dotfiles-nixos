@@ -1,27 +1,33 @@
-{...}: {
-  flake.nixosModules.laurieHardware = {
+{
+  self,
+  inputs,
+  ...
+}: {
+  flake.nixosModules."laurieHardware" = {
+    config,
+    pkgs,
     lib,
     modulesPath,
     ...
   }: {
     imports = [
-      (modulesPath + "/profiles/qemu-guest.nix")
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-    boot.initrd.availableKernelModules = ["ata_piix" "uhci_hcd" "virtio_pci" "sr_mod" "virtio_blk"];
-    boot.initrd.kernelModules = ["dm-snapshot"];
-    boot.kernelModules = [];
+    boot.initrd.availableKernelModules = ["xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "usbhid" "sd_mod"];
+    boot.initrd.kernelModules = [];
+    boot.kernelModules = ["kvm-intel"];
     boot.extraModulePackages = [];
 
     fileSystems."/" = {
-      device = "/dev/disk/by-uuid/4eb8fd24-f04a-481c-8874-e177af1bb0d6";
+      device = "/dev/disk/by-uuid/4675043c-e0e4-414d-9108-57d495fd2915";
       fsType = "ext4";
     };
 
     fileSystems."/boot" = {
-      device = "/dev/disk/by-uuid/5CA6-66ED";
+      device = "/dev/disk/by-uuid/A2CB-6302";
       fsType = "vfat";
-      options = ["fmask=0022" "dmask=0022"];
+      options = ["fmask=0077" "dmask=0077"];
     };
 
     swapDevices = [];
@@ -31,8 +37,10 @@
     # still possible to use this option, but it's recommended to use it in conjunction
     # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
     networking.useDHCP = lib.mkDefault true;
-    # networking.interfaces.ens3.useDHCP = lib.mkDefault true;
+    # networking.interfaces.enp0s13f0u1u4c2.useDHCP = lib.mkDefault true;
+    # networking.interfaces.wlo1.useDHCP = lib.mkDefault true;
 
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+    hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   };
 }

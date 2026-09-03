@@ -1,67 +1,128 @@
-{self, ...}: {
-  flake.nixosModules.laurieConfiguration = {
-    lib,
+{
+  self,
+  inputs,
+  ...
+}: {
+  flake.nixosModules."laurieConfiguration" = {
     pkgs,
+    lib,
     ...
   }: {
     imports = [
-      self.nixosModules.laurieHardware
-      self.nixosModules.pangolin-docker
+      self.nixosModules."laurieHardware"
+      self.nixosModules.base
+      self.nixosModules.devices
+      self.nixosModules.desktop
+      self.nixosModules.printing
+
+      self.nixosModules.networking
+      self.nixosModules."programs-3d"
     ];
 
     networking.hostName = "laurie";
 
-    services.openssh = {
+    # bootloader
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+    boot.loader.timeout = 1;
+    boot.kernelPackages = pkgs.linuxPackages_latest;
+
+    # faster initrd: systemd stage-1 + zstd compression
+    boot.initrd.systemd.enable = true;
+    boot.initrd.compressor = "zstd";
+
+    # skip waiting for a full network connection before declaring boot done
+    systemd.services.NetworkManager-wait-online.enable = false;
+
+    # graphics + Intel iGPU power saving
+    boot.kernelParams = [
+      "nvidia_drm.fbdev=1"
+      "nvidia_drm.modeset=1"
+      "i915.enable_psr=1" # panel self-refresh
+      "i915.enable_fbc=1" # framebuffer compression
+      "mem_sleep_default=deep" # S3 deep sleep on suspend
+    ];
+    # preserve GPU memory across suspend so nvidia-modeset can resume cleanly
+    boot.extraModprobeConfig = ''
+      options nvidia NVreg_PreserveVideoMemoryAllocations=1
+      options nvidia NVreg_TemporaryFilePath=/var/tmp
+      options nvidia NVreg_DynamicPowerManagementVideoMemoryThreshold=0
+    '';
+    hardware.graphics = {
       enable = true;
-      settings = {
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-        PermitRootLogin = "prohibit-password";
+      enable32Bit = true;
+    };
+    hardware.nvidia = {
+      modesetting.enable = true;
+      powerManagement.enable = true;
+      powerManagement.finegrained = true;
+    };
+    hardware.nvidia = {
+      open = false;
+      prime = {
+        offload.enable = true;
+        offload.enableOffloadCmd = true;
+        intelBusId = "PCI:0@0:2:0";
+        nvidiaBusId = "PCI:1@0:0:0";
       };
     };
-    users.users.root.openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINt6vCBvTYA+fRDNxAHc9TmYDP/eAaUlCBBsK5AUM5Ym"
+    services.xserver.videoDrivers = [
+      "modesetting"
+      "nvidia"
     ];
 
-    # Pangolin: the public reverse proxy + WireGuard tunnel server, running as
-    # the upstream container stack - see nixosModules.pangolin-docker for the
-    # containers, the generated config.yml and the traefik configuration.
-    #
-    # DNS lives in Cloudflare and MUST be "DNS only" (grey cloud):
-    #   *.dazza9905.me  A  37.120.189.13
-    # Proxying (orange cloud) breaks two things at once: WireGuard UDP 51820
-    # does not survive Cloudflare's proxy, so newt can never dial in, and
-    # Let's Encrypt's HTTP-01 challenge never reaches traefik.
-    #
-    # That wildcard *record* is what keeps this file small, and it is doing more
-    # work than it looks. Because every subdomain resolves to this box, traefik
-    # can answer an HTTP-01 challenge for any of them - including the hostnames
-    # of private *site* resources (immich.*) that it does not actually serve.
-    # So traefik ends up holding an ordinary per-hostname cert for those too,
-    # pangolin's acmeCertSync imports it from acme.json, and pushes it down to
-    # the newt client that really terminates the TLS. No wildcard *certificate*
-    # is needed anywhere, so no DNS-01 and no Cloudflare API token.
-    #
-    # The dashboard is behind a login and disable_signup_without_invite is set,
-    # so nobody can self-register.
-    #
-    # No allowUnfreePredicate any more: the licence gating lives in the image,
-    # not in a nixpkgs `edition` argument, so nothing here is unfree.
+    # battery and asus stuff
+    services.upower.enable = true;
+    services.asusd.enable = true;
+    # supergfxd persists the GPU mode across reboots in /etc/asusd/supergfxd.conf
+    # do NOT set a default mode here so manual changes (Integrated/Hybrid/etc.) survive rebuilds
+    services.supergfxd.enable = true;
 
-    boot.loader.grub = {
-      efiSupport = true;
-      efiInstallAsRemovable = true;
-      device = "nodev";
+    # suspend on lid close (logind defaults to ignore on Wayland without a DE)
+    services.logind = {
+      lidSwitch = "suspend";
+      lidSwitchExternalPower = "suspend";
     };
 
-    environment.systemPackages = map lib.lowPrio [
-      pkgs.curl
-      pkgs.gitMinimal
-      pkgs.neovim
+    # dynamic CPU frequency + turbo boost based on load and AC/battery state
+    services.auto-cpufreq.enable = true;
+    services.auto-cpufreq.settings = {
+      battery = {
+        governor = "powersave";
+        turbo = "auto";
+      };
+      charger = {
+        governor = "performance";
+        turbo = "auto";
+      };
+    };
+
+    # SD card reader disabled — unused; caused sdhci errors on resume
+    # re-enable by uncommenting below and removing the blacklist
+    boot.blacklistedKernelModules = ["sdhci_pci"];
+    # systemd.services.sdhci-resume = {
+    #   description = "Reload sdhci_pci after resume";
+    #   after = ["suspend.target" "hibernate.target" "hybrid-sleep.target"];
+    #   wantedBy = ["suspend.target" "hibernate.target" "hybrid-sleep.target"];
+    #   serviceConfig = {
+    #     Type = "oneshot";
+    #     ExecStart = "/bin/sh -c 'modprobe -r sdhci_pci && modprobe sdhci_pci'";
+    #   };
+    # };
+
+    networking.networkmanager.enable = true;
+
+    users.users.dazza = {
+      isNormalUser = true;
+      description = "Daren Drahos";
+      extraGroups = ["networkmanager" "wheel"];
+      packages = with pkgs; [
+      ];
+    };
+
+    environment.systemPackages = with pkgs; [
     ];
 
-    nix.settings.experimental-features = ["nix-command" "flakes"];
-
-    system.stateVersion = "24.05";
+    system.stateVersion = "25.05"; # Did you read the comment?
   };
 }

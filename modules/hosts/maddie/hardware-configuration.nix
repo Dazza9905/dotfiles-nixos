@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.davidHardware = {
+  flake.nixosModules.maddieHardware = {
     lib,
     modulesPath,
     ...
